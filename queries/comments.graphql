@@ -1,0 +1,14 @@
+{
+    comments {
+        id
+        content
+        discussion {
+            id
+            canonical
+        }
+        user {
+            id
+            name
+        }
+    }
+}

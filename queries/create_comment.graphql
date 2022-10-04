@@ -1,0 +1,8 @@
+mutation {
+    createComment(input: {
+        content: "another comment"
+        discussionCanonical: "clanek"
+    }) {
+        id
+    }
+}
