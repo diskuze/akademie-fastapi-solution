@@ -15,12 +15,13 @@ from diskuze.models import Discussion
 T = TypeVar("T", bound=Base)
 
 
-class DatabaseDataLoader:
+class DatabaseIdentityDataLoader:
     def __init__(self, db: Database, model: Type[T]):
         self.db = db
         self.model = model
 
     async def load(self, ids: List[int]) -> List[T]:
+        # TODO: to implement
         async with self.db.session() as session:
             query = select(self.model).where(self.model.id.in_(ids))
             result = await session.execute(query)
@@ -29,8 +30,23 @@ class DatabaseDataLoader:
         return items
 
 
+# TODO: design a solution for comment replies data loader
+class CommentRepliesDataLoader:
+    def __init__(self, db: Database):
+        self.db = db
+
+    async def load(self, ids: List[int]) -> List[Comment]:
+        async with self.db.session() as session:
+            query = select(Comment).where(Comment.reply_to_id.in_(ids))
+            result = await session.execute(query)
+            items = list(result.scalars())
+
+        return items
+
+
 class DataLoaderRegistry:
     def __init__(self, db: Database = Depends(get_database)):
-        self.comment = DatabaseDataLoader(db, Comment)
-        self.discussion = DatabaseDataLoader(db, Discussion)
-        self.user = DatabaseDataLoader(db, User)
+        self.comment = DatabaseIdentityDataLoader(db, Comment)
+        self.comment_replies = CommentRepliesDataLoader(db)
+        self.discussion = DatabaseIdentityDataLoader(db, Discussion)
+        self.user = DatabaseIdentityDataLoader(db, User)

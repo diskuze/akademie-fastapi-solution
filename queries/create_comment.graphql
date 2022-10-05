@@ -1,8 +1,15 @@
-mutation {
-    createComment(input: {
-        content: "another comment"
-        discussionCanonical: "clanek"
-    }) {
+mutation CreateComment(
+    $content: String! = "another comment"
+    $discussionCanonical: String! = "clanek"
+    $replyTo: Int = null
+) {
+    createComment(
+        input: {
+            content: $content
+            discussionCanonical: $discussionCanonical
+            replyTo: $replyTo
+        }
+    ) {
         id
     }
 }

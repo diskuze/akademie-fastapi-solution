@@ -2,6 +2,23 @@
     comments {
         id
         content
+        replyTo {
+            id
+            content
+            user {
+                id
+                name
+            }
+        }
+        replies {
+            id
+            content
+            user {
+                id
+                name
+            }
+
+        }
         discussion {
             id
             canonical
