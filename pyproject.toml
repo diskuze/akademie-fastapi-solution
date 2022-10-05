@@ -2,7 +2,7 @@
 name = "akademie-fastapi"
 version = "0.1.0"
 description = ""
-authors = ["Jiří Lajčok <Jiri.Lajcok@firma.seznam.cz>"]
+authors = ["Jiří Lajčok <jiri.lajcok@firma.seznam.cz>", "Jiří Kupka <jiri.kupka@firma.seznam.cz>"]
 
 [tool.poetry.dependencies]
 python = "^3.7"

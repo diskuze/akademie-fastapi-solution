@@ -7,9 +7,11 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from strawberry.types import Info
 
-from diskuze import AppContext
+from diskuze.dependencies.context import AppContext
 from diskuze import models
 
+
+# TODO: based on the models, define schema object types
 
 @strawberry.type
 class Discussion:
@@ -49,7 +51,7 @@ class Query:
         return "Hello World!"
 
     @strawberry.field(description="All comments")
-    async def comments(self, info: Info[AppContext, None], first: int = 10, offset: int = 0) -> List[Comment]:
+    async def comments(self, info: Info[AppContext, Any], first: int = 10, offset: int = 0) -> List[Comment]:
         async with info.context.db.session() as session:
             query = select(models.Comment).limit(first).offset(offset)
             result = await session.execute(query)
@@ -75,7 +77,7 @@ class CommentInput:
 @strawberry.type
 class Mutation:
     @strawberry.mutation
-    async def create_comment(self, info: Info[AppContext, None], input: CommentInput) -> Optional[Comment]:
+    async def create_comment(self, info: Info[AppContext, Any], input: CommentInput) -> Optional[Comment]:
         if not info.context.user:
             return None
 

@@ -19,3 +19,5 @@ if __name__ == '__main__':
 
     engine = create_mock_engine('mysql://', executor=metadata_dump)
     Base.metadata.create_all(engine)
+
+    print(f"Generated create schema script to {DUMP_FILE}")
