@@ -3,10 +3,10 @@ from pydantic.tools import lru_cache
 
 
 class Config(BaseSettings):
-    DB_HOST = "127.0.0.1"
-    DB_USER = "root"
-    DB_PASS = "root"
-    DB_NAME = "diskuze"
+    DB_HOST = "temp-it-akademie.cms8yp1jph9y.eu-central-1.rds.amazonaws.com"
+    DB_USER = "temp_it_akademie"
+    DB_PASS = "itAkadem1e"
+    DB_NAME = "temp_it_akademie"
 
 
 @lru_cache()
