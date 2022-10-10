@@ -7,6 +7,7 @@
             content
             user {
                 id
+                nick
                 name
             }
         }
@@ -17,7 +18,6 @@
                 id
                 name
             }
-
         }
         discussion {
             id

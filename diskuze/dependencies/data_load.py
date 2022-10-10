@@ -1,9 +1,14 @@
+import asyncio
+import urllib.parse
+from typing import Dict
 from typing import List
 from typing import Type
 from typing import TypeVar
 
+import httpx
 from fastapi import Depends
 from sqlalchemy import select
+from strawberry.dataloader import DataLoader
 
 from diskuze.models import User
 from diskuze.dependencies.database import Database
@@ -25,7 +30,7 @@ class DatabaseIdentityDataLoader:
         async with self.db.session() as session:
             query = select(self.model).where(self.model.id.in_(ids))
             result = await session.execute(query)
-            items = list(result.scalars())
+            items = result.scalars().all()  # TODO: use iterators or lists? efficiency vs debug-ability
 
         return items
 
@@ -35,18 +40,47 @@ class CommentRepliesDataLoader:
     def __init__(self, db: Database):
         self.db = db
 
-    async def load(self, ids: List[int]) -> List[Comment]:
+    async def load(self, ids: List[int]) -> List[List[int]]:
         async with self.db.session() as session:
-            query = select(Comment).where(Comment.reply_to_id.in_(ids))
+            query = select(Comment.id, Comment.reply_to_id).where(Comment.reply_to_id.in_(ids))
             result = await session.execute(query)
-            items = list(result.scalars())
+            reply_edges = result.all()
 
-        return items
+        reply_mapping: Dict[int, List[int]] = {}
+
+        for (id_, reply_to_id) in reply_edges:
+            reply_mapping.setdefault(reply_to_id, []).append(id_)
+
+        return [reply_mapping.get(id_, []) for id_ in ids]
+
+
+# TODO: to implement
+async def load_full_name(names: List[str]) -> List[str]:
+    """
+    https://github.com/encode/httpx
+    https://randomuser.me/documentation
+    """
+
+    async with httpx.AsyncClient() as client:
+        responses = await asyncio.gather(
+            *(
+                client.get("https://randomuser.me/api/?seed={}".format(urllib.parse.quote_plus(name)))
+                for name in names
+            )
+        )
+
+    def _compose_full_name(response):
+        name = response.json()["results"][0]["name"]
+        first, last = name["first"], name["last"]
+        return f"{first} {last}"
+
+    return [_compose_full_name(response) for response in responses]
 
 
 class DataLoaderRegistry:
     def __init__(self, db: Database = Depends(get_database)):
-        self.comment = DatabaseIdentityDataLoader(db, Comment)
-        self.comment_replies = CommentRepliesDataLoader(db)
-        self.discussion = DatabaseIdentityDataLoader(db, Discussion)
-        self.user = DatabaseIdentityDataLoader(db, User)
+        self.comment = DataLoader(load_fn=DatabaseIdentityDataLoader(db, Comment).load)
+        self.comment_replies = DataLoader(load_fn=CommentRepliesDataLoader(db).load)
+        self.discussion = DataLoader(load_fn=DatabaseIdentityDataLoader(db, Discussion).load)
+        self.user = DataLoader(load_fn=DatabaseIdentityDataLoader(db, User).load)
+        self.user_full_name = DataLoader(load_fn=load_full_name)

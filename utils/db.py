@@ -10,7 +10,7 @@ DUMP_FILE = "db.sql"
 def metadata_dump(sql, *multiparams, **params):
     with open(DUMP_FILE, "a") as dump_file:
         compiled = sql.compile(dialect=engine.dialect)
-        dump_file.write(f"{str(compiled).strip()};\n\n")
+        dump_file.write("{};\n\n".format(str(compiled).strip()))
 
 
 if __name__ == '__main__':

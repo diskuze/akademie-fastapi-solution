@@ -1,5 +1,4 @@
 from typing import Any
-from typing import Iterable
 from typing import List
 from typing import Optional
 
@@ -27,7 +26,12 @@ class Discussion:
 @strawberry.type
 class User:
     id: int
-    name: str
+    nick: str
+
+    @strawberry.field
+    async def name(self, info: Info[AppContext, Any]) -> str:
+        name = await info.context.data_loader.user_full_name.load(self.nick)
+        return name
 
 
 @strawberry.type
@@ -55,22 +59,23 @@ class Comment:
         if not self.reply_to_id:
             return None
 
-        comment, = await info.context.data_loader.comment.load([self.reply_to_id])
-        return comment
+        comment = await info.context.data_loader.comment.load(self.reply_to_id)
+        return Comment.from_model(comment)
 
     @strawberry.field
     async def replies(self, info: Info[AppContext, Any]) -> List["Comment"]:
-        comments = info.context.data_loader.comment_replies.load([self.id])
+        comment_ids = await info.context.data_loader.comment_replies.load(self.id)
+        comments = await info.context.data_loader.comment.load_many(comment_ids)
         return [Comment.from_model(comment) for comment in comments]
 
     @strawberry.field
     async def discussion(self, info: Info[AppContext, Any]) -> Discussion:
-        discussion, = await info.context.data_loader.discussion.load([self.discussion_id])
+        discussion = await info.context.data_loader.discussion.load(self.discussion_id)
         return discussion
 
     @strawberry.field
     async def user(self, info: Info[AppContext, Any]) -> User:
-        user, = await info.context.data_loader.user.load([self.user_id])
+        user = await info.context.data_loader.user.load(self.user_id)
         return user
 
 
@@ -85,7 +90,7 @@ class Query:
         async with info.context.db.session() as session:
             query = select(models.Comment).limit(first).offset(offset)
             result = await session.execute(query)
-            comments: Iterable[models.Comment] = result.scalars()
+            comments = result.scalars().all()
 
         return [Comment.from_model(comment) for comment in comments]
 

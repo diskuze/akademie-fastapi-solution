@@ -20,7 +20,8 @@ class User(Base):
     __tablename__ = "user"
 
     id = Column(Integer, nullable=False, primary_key=True)
-    name = Column(String(64), nullable=False, unique=True)
+    nick = Column(String(64), nullable=False, unique=True)
+
     comments = relationship("Comment", back_populates="user")
 
 
