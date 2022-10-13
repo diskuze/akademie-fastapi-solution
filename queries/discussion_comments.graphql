@@ -1,6 +1,6 @@
 query DiscussionComments(
-  $canonical: String!
-  $offset: Int! = 0
+  $canonical: String = "www.novinky.cz/clanek/68037"
+  $offset: Int = 0
 ) {
   discussion(canonical: $canonical) {
     id
