@@ -15,12 +15,12 @@ async def get_auth_user(request: Request, db: Database = Depends(get_database)) 
     if len(authorization) < 2:
         return None  # unauthorized or invalid format
 
-    auth_type, username = authorization
-    if auth_type != "User" or not username:
-        return None  # invalid type or empty username
+    auth_type, nick = authorization
+    if auth_type != "User" or not nick:
+        return None  # invalid type or empty nick
 
     async with db.session() as session:
-        query = select(User).where(User.name == username)
+        query = select(User).where(User.nick == nick)
         result = await session.execute(query)
         user = result.scalar_one_or_none()
 

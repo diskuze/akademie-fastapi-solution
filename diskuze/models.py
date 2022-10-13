@@ -13,6 +13,7 @@ class Discussion(Base):
 
     id = Column(Integer, nullable=False, primary_key=True)
     canonical = Column(String(256), nullable=False, unique=True)
+
     comments = relationship("Comment", back_populates="discussion")
 
 

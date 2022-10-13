@@ -6,6 +6,7 @@ import strawberry
 from sqlalchemy import exists
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql.functions import count
 from strawberry.types import Info
 
 from diskuze.dependencies.context import AppContext
@@ -20,7 +21,14 @@ class Discussion:
     id: int
     canonical: str
 
-    # TODO: add comments listing
+    @strawberry.field(description="Comments in discussion listing")
+    async def comments(self, info: Info[AppContext, Any], first: int = 10, offset: int = 0) -> List["Comment"]:
+        async with info.context.db.session() as session:
+            query = select(models.Comment).where(models.Comment.discussion_id == self.id).limit(first).offset(offset)
+            result = await session.execute(query)
+            comments = result.scalars().all()
+
+        return [Comment.from_model(comment) for comment in comments]
 
 
 @strawberry.type
@@ -29,8 +37,8 @@ class User:
     nick: str
 
     @strawberry.field
-    async def name(self, info: Info[AppContext, Any]) -> str:
-        name = await info.context.data_loader.user_full_name.load(self.nick)
+    async def name(self, info: Info[AppContext, Any]) -> Optional[str]:
+        name = await info.context.data_loader.user_full_name.load(self.id)
         return name
 
 
@@ -50,7 +58,6 @@ class Comment:
     content: str
 
     reply_to_id: strawberry.Private[int]
-
     discussion_id: strawberry.Private[int]
     user_id: strawberry.Private[int]
 
@@ -63,10 +70,23 @@ class Comment:
         return Comment.from_model(comment)
 
     @strawberry.field
-    async def replies(self, info: Info[AppContext, Any]) -> List["Comment"]:
-        comment_ids = await info.context.data_loader.comment_replies.load(self.id)
-        comments = await info.context.data_loader.comment.load_many(comment_ids)
+    async def replies(self, info: Info[AppContext, Any], first: int = 10, offset: int = 0) -> List["Comment"]:
+        async with info.context.db.session() as session:
+            query = (
+                select(models.Comment)
+                .where(models.Comment.reply_to_id == self.id)
+                .limit(first)
+                .offset(offset)
+            )
+            result = await session.execute(query)
+            comments = result.scalars().all()
+
         return [Comment.from_model(comment) for comment in comments]
+
+        # # Data loader solution is quite limiting as it cannot accept given arguments
+        # comment_ids = await info.context.data_loader.comment_replies.load(self.id)
+        # comments = await info.context.data_loader.comment.load_many(comment_ids)
+        # return [Comment.from_model(comment) for comment in comments]
 
     @strawberry.field
     async def discussion(self, info: Info[AppContext, Any]) -> Discussion:
@@ -85,7 +105,16 @@ class Query:
     def hello(self) -> str:
         return "Hello World!"
 
-    @strawberry.field(description="All comments")
+    @strawberry.field(description="Gives boring statistics about comments total")
+    async def total(self, info: Info[AppContext, Any]) -> int:
+        async with info.context.db.session() as session:
+            query = select(count()).select_from(models.Comment)
+            result = await session.execute(query)
+            total = result.scalar()
+
+        return total
+
+    @strawberry.field(description="All comments listing")
     async def comments(self, info: Info[AppContext, Any], first: int = 10, offset: int = 0) -> List[Comment]:
         async with info.context.db.session() as session:
             query = select(models.Comment).limit(first).offset(offset)
@@ -93,6 +122,15 @@ class Query:
             comments = result.scalars().all()
 
         return [Comment.from_model(comment) for comment in comments]
+
+    @strawberry.field(description="Discussion obtained by its canonical identifier")
+    async def discussion(self, info: Info[AppContext, Any], canonical: str) -> Optional[Discussion]:
+        async with info.context.db.session() as session:
+            query = select(models.Discussion).where(models.Discussion.canonical == canonical)
+            result = await session.execute(query)
+            discussion = result.scalar_one_or_none()
+
+        return discussion
 
 
 @strawberry.input

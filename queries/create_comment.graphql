@@ -1,6 +1,6 @@
 mutation CreateComment(
-    $content: String! = "another comment"
-    $discussionCanonical: String! = "clanek"
+    $content: String! = "test comment"
+    $discussionCanonical: String! = "www.sport.cz/clanek/91839"
     $replyTo: Int = null
 ) {
     createComment(

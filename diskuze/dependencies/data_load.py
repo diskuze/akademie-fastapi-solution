@@ -1,12 +1,13 @@
 import asyncio
-import urllib.parse
 from typing import Dict
 from typing import List
+from typing import Optional
 from typing import Type
 from typing import TypeVar
 
 import httpx
 from fastapi import Depends
+from httpx import Response
 from sqlalchemy import select
 from strawberry.dataloader import DataLoader
 
@@ -55,21 +56,22 @@ class CommentRepliesDataLoader:
 
 
 # TODO: to implement
-async def load_full_name(names: List[str]) -> List[str]:
+async def load_full_name(ids: List[int]) -> List[Optional[str]]:
     """
     https://github.com/encode/httpx
     https://randomuser.me/documentation
     """
 
+    # TODO: truly async with only 1 client?
     async with httpx.AsyncClient() as client:
         responses = await asyncio.gather(
-            *(
-                client.get("https://randomuser.me/api/?seed={}".format(urllib.parse.quote_plus(name)))
-                for name in names
-            )
+            *(client.get(f"https://randomuser.me/api/?seed={id_}") for id_ in ids)
         )
 
-    def _compose_full_name(response):
+    def _compose_full_name(response: Response):
+        if response.status_code != 200:
+            return None
+
         name = response.json()["results"][0]["name"]
         first, last = name["first"], name["last"]
         return f"{first} {last}"
