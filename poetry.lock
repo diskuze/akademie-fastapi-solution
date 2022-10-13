@@ -194,17 +194,6 @@ dotenv = ["python-dotenv (>=0.10.4)"]
 email = ["email-validator (>=1.0.3)"]
 
 [[package]]
-name = "pygments"
-version = "2.13.0"
-description = "Pygments is a syntax highlighting package written in Python."
-category = "main"
-optional = false
-python-versions = ">=3.6"
-
-[package.extras]
-plugins = ["importlib-metadata"]
-
-[[package]]
 name = "pymysql"
 version = "1.0.2"
 description = "Pure Python MySQL Driver"
@@ -326,15 +315,11 @@ python-versions = ">=3.7,<4.0"
 
 [package.dependencies]
 "backports.cached-property" = {version = ">=1.0.2,<2.0.0", markers = "python_version < \"3.8\""}
-click = {version = ">=7.0,<9.0", optional = true, markers = "extra == \"debug-server\" or extra == \"cli\""}
 fastapi = {version = ">=0.65.2", optional = true, markers = "extra == \"fastapi\""}
 graphql-core = ">=3.2.0,<3.3.0"
-pygments = {version = ">=2.3,<3.0", optional = true, markers = "extra == \"debug-server\" or extra == \"cli\""}
 python-dateutil = ">=2.7.0,<3.0.0"
 python-multipart = {version = ">=0.0.5,<0.0.6", optional = true, markers = "extra == \"asgi\" or extra == \"debug-server\" or extra == \"fastapi\""}
-starlette = {version = ">=0.13.6", optional = true, markers = "extra == \"asgi\" or extra == \"debug-server\""}
 typing_extensions = ">=3.7.4,<5.0.0"
-uvicorn = {version = ">=0.11.6,<0.19.0", optional = true, markers = "extra == \"debug-server\""}
 
 [package.extras]
 asgi = ["starlette (>=0.13.6)", "python-multipart (>=0.0.5,<0.0.6)"]
@@ -389,7 +374,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "b1f03c3785f1ef7e748457af2479652b2cfadec6f0a51d216a61ee0f9732980f"
+content-hash = "beff25a02ee32d8fed4656b9605bf442e68948f373231d570be709476f8f4383"
 
 [metadata.files]
 aiomysql = []
@@ -407,7 +392,6 @@ httpx = []
 idna = []
 importlib-metadata = []
 pydantic = []
-pygments = []
 pymysql = []
 python-dateutil = []
 python-multipart = []

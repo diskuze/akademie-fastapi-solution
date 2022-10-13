@@ -9,7 +9,6 @@ from diskuze.dependencies.database import Database
 from diskuze.dependencies.database import get_database
 
 
-# TODO: to define
 async def get_auth_user(request: Request, db: Database = Depends(get_database)) -> Optional[User]:
     authorization = (request.headers.get("Authorization") or "").split(" ", 1)
     if len(authorization) < 2:

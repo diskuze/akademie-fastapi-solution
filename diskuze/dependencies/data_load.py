@@ -27,16 +27,14 @@ class DatabaseIdentityDataLoader:
         self.model = model
 
     async def load(self, ids: List[int]) -> List[T]:
-        # TODO: to implement
         async with self.db.session() as session:
             query = select(self.model).where(self.model.id.in_(ids))
             result = await session.execute(query)
-            items = result.scalars().all()  # TODO: use iterators or lists? efficiency vs debug-ability
+            items = result.scalars().all()
 
         return items
 
 
-# TODO: design a solution for comment replies data loader
 class CommentRepliesDataLoader:
     def __init__(self, db: Database):
         self.db = db
@@ -55,14 +53,12 @@ class CommentRepliesDataLoader:
         return [reply_mapping.get(id_, []) for id_ in ids]
 
 
-# TODO: to implement
 async def load_full_name(ids: List[int]) -> List[Optional[str]]:
     """
     https://github.com/encode/httpx
     https://randomuser.me/documentation
     """
 
-    # TODO: truly async with only 1 client?
     async with httpx.AsyncClient() as client:
         responses = await asyncio.gather(
             *(client.get(f"https://randomuser.me/api/?seed={id_}") for id_ in ids)

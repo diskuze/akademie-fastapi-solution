@@ -13,9 +13,6 @@ from diskuze.dependencies.context import AppContext
 from diskuze import models
 
 
-# TODO: based on the models, define schema object types
-
-# TODO: naming models / objects?
 @strawberry.type
 class Discussion:
     id: int
@@ -142,20 +139,18 @@ class CommentInput:
 
 @strawberry.type
 class Mutation:
-    # TODO: to implement
     @strawberry.mutation
     async def create_comment(
             self,
             info: Info[AppContext, Any],
             input_: strawberry.arguments.Annotated[CommentInput, strawberry.argument(name="input")],
-    ) -> Optional[Comment]:  # TODO: return status, too
+    ) -> Optional[Comment]:
         if not info.context.user:
             return None
 
         if not input_.content:
             return None
 
-        session: AsyncSession  # TODO: fix typing of the context manager
         async with info.context.db.session() as session:
             query = select(models.Discussion.id).where(models.Discussion.canonical == input_.discussion_canonical)
             result = await session.execute(query)
