@@ -11,12 +11,20 @@ from diskuze.dependencies.config import get_config
 
 
 class Database:
+    """
+    Asynchronous database adapter
+    """
+
     def __init__(self, connection_url: str):
         self.engine = create_async_engine(connection_url)
         self.session_factory = sessionmaker(self.engine, expire_on_commit=False, class_=AsyncSession)
 
     @asynccontextmanager
     async def session(self) -> AsyncIterator[AsyncSession]:
+        """
+        Obtains a new asynchronous session with managed transaction
+        """
+
         async with self.session_factory() as session:
             try:
                 yield session
@@ -29,6 +37,10 @@ class Database:
 
 
 def get_database(config: Config = Depends(get_config)):
+    """
+    Database dependency factory
+    """
+
     return Database(
         f"mysql+aiomysql://{config.DB_USER}:{config.DB_PASS}@{config.DB_HOST}/{config.DB_NAME}"
     )

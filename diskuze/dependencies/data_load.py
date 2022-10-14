@@ -18,10 +18,17 @@ from diskuze.models import Base
 from diskuze.models import Comment
 from diskuze.models import Discussion
 
+# Implementations of Strawberry's DataLoader
+# https://strawberry.rocks/docs/guides/dataloaders
+
 T = TypeVar("T", bound=Base)
 
 
 class DatabaseIdentityDataLoader:
+    """
+    Common data loader to load items from database by its identity key
+    """
+
     def __init__(self, db: Database, model: Type[T]):
         self.db = db
         self.model = model
@@ -76,6 +83,10 @@ async def load_full_name(ids: List[int]) -> List[Optional[str]]:
 
 
 class DataLoaderRegistry:
+    """
+    Collection of available data loaders
+    """
+
     def __init__(self, db: Database = Depends(get_database)):
         self.comment = DataLoader(load_fn=DatabaseIdentityDataLoader(db, Comment).load)
         self.comment_replies = DataLoader(load_fn=CommentRepliesDataLoader(db).load)
